@@ -1,2 +1,2 @@
-# ChessCardGame
-cocos-creator 棋牌游戏 麻将
+# hello-world
+Hello world new project template.

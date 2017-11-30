@@ -1,0 +1,30 @@
+{
+  "ver": "1.0.0",
+  "uuid": "38cbadf3-1268-4d0a-ac4f-65d300cfa193",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "subMetas": {
+    "qpgame_icon": {
+      "ver": "1.0.3",
+      "uuid": "7f818b6d-ef5b-414f-be1d-6eecc9e5b0d7",
+      "rawTextureUuid": "38cbadf3-1268-4d0a-ac4f-65d300cfa193",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 108,
+      "height": 108,
+      "rawWidth": 108,
+      "rawHeight": 108,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

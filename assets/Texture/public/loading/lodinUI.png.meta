@@ -1,0 +1,30 @@
+{
+  "ver": "1.0.0",
+  "uuid": "4bf7f95a-293c-40f7-aa26-9dd1a4be242f",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "subMetas": {
+    "lodinUI": {
+      "ver": "1.0.3",
+      "uuid": "3a657863-0557-4a72-a3b4-57176724108f",
+      "rawTextureUuid": "4bf7f95a-293c-40f7-aa26-9dd1a4be242f",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -1,
+      "offsetY": 163,
+      "trimX": 2,
+      "trimY": 2,
+      "width": 122,
+      "height": 694,
+      "rawWidth": 128,
+      "rawHeight": 1024,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
