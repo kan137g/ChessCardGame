@@ -4,6 +4,8 @@ cc.Class({
     properties: {
         // 麻将牌
         mahjongCard: cc.Prefab,
+        // 
+        chowType: cc.Prefab,
         // 我的手牌
         mineHandleLayout: cc.Node,
         mineDeskLayout: cc.Node,
@@ -16,6 +18,11 @@ cc.Class({
         // 我上家的手牌
         rightHandleLayout: cc.Node,
         rightDeskLayout: cc.Node,
+
+        // 吃牌类型的布局
+        chowTypeLayout: cc.Node,
+
+
         // 所有麻将的图片
         cardSpriteAtlas: {
             default: null,
@@ -37,9 +44,10 @@ cc.Class({
         // 生成一副牌
         this.allCards = new Array("tong1", "tong1", "tong1", "tong1", "tong2", "tong2", "tong2", "tong2", "tong3", "tong3", "tong3", "tong3", "tong4", "tong4", "tong4", "tong4", "tong5", "tong5", "tong5", "tong5", "tong6", "tong6", "tong6", "tong6", "tong7", "tong7", "tong7", "tong7", "tong8", "tong8", "tong8", "tong8", "tong9", "tong9", "tong9", "tong9", "tiao1", "tiao1", "tiao1", "tiao1", "tiao2", "tiao2", "tiao2", "tiao2", "tiao3", "tiao3", "tiao3", "tiao3", "tiao4", "tiao4", "tiao4", "tiao4", "tiao5", "tiao5", "tiao5", "tiao5", "tiao6", "tiao6", "tiao6", "tiao6", "tiao7", "tiao7", "tiao7", "tiao7", "tiao8", "tiao8", "tiao8", "tiao8", "tiao9", "tiao9", "tiao9", "tiao9", "wang1", "wang1", "wang1", "wang1", "wang2", "wang2", "wang2", "wang2", "wang3", "wang3", "wang3", "wang3", "wang4", "wang4", "wang4", "wang4", "wang5", "wang5", "wang5", "wang5", "wang6", "wang6", "wang6", "wang6", "wang7", "wang7", "wang7", "wang7", "wang8", "wang8", "wang8", "wang8", "wang9", "wang9", "wang9", "wang9");
 
-        // var RuleUtils=require("RuleUtils") ;
-        // this.ruleUtils=new RuleUtils();
-        // this.ruleUtils.gong();
+        this.hasLittleeTwoStep = false;
+        this.hasLittleeOneStep = false;
+        this.hasBiggerOneStep = false;
+        this.hasBiggerTwoStep = false;
     },
 
     // called every frame, uncomment this function to activate update callback
@@ -112,6 +120,7 @@ cc.Class({
          * 显示自己的牌的方法
          */
     showMineHandleMahjong: function () {
+        this.mineHandleLayout.removeAllChildren();
         for (var i = 0; i < this.mineHandleCards.length; i++) {
             this.createMineHandleMahjong(i);
 
@@ -125,7 +134,7 @@ cc.Class({
         var mahjong = cc.instantiate(this.mahjongCard);
         // mahjong.SpriteFrame=this.cardSpriteAtlas.getSpriteFrame("big_chun");
         // this.testSprite=this.cardSpriteAtlas.getSpriteFrame("big_chun");
-        var mahjongJs = mahjong.getComponent("Mahjong");
+        var mahjongJs = mahjong.getComponent("MahjongPrefab");
         // cc.log("这次要发的牌是" + index + "    " + "big_" + this.mineHandleCards[index]);
         mahjongJs.content.spriteFrame = this.cardSpriteAtlas.getSpriteFrame("big_" + this.mineHandleCards[index]);
         mahjongJs.cardName = this.mineHandleCards[index];
@@ -157,7 +166,7 @@ cc.Class({
             cc.log("子节点数量为：" + mineAllMahjongs.length);
             for (var i = 0; i < mineAllMahjongs.length; i++) {
                 var mahjongCard = mineAllMahjongs[i];
-                var mahjongCardJS = mahjongCard.getComponent("Mahjong");
+                var mahjongCardJS = mahjongCard.getComponent("MahjongPrefab");
                 if (mahjongCardJS.isChoose) {
                     mahjongCardJS.isChoose = false;
                     mahjongCard.y -= 20;
@@ -254,14 +263,12 @@ cc.Class({
     },
 
     onActionClick: function (event) {
-        // cc.log(event.target);
-        cc.log(event.target.name);
         var CHOW = "chow";
         var PONG = "pong";
         var GONG = "gong";
         var GOING_OUT = "goingOut";
         if (CHOW == event.target.name) {
-            this.chow(this.deskCard, this.mineHandleCards);
+            this.judgeChowType(this.deskCard);
         } else if (PONG == event.target.name) {
             this.pong(this.deskCard, this.mineHandleCards);
 
@@ -281,7 +288,12 @@ cc.Class({
         this.deskCard = cardName;
         //桌上牌的引索值往后移一位
         this.currentIndex++;
+        // 显示牌
         this.showCurrentGetCard(cardName);
+
+        // 显示操作
+        this.isCanChow(this.deskCard, this.mineHandleCards);
+
 
     },
 
@@ -290,7 +302,7 @@ cc.Class({
      */
     showCurrentGetCard: function (cardName) {
         var mahjong = cc.instantiate(this.mahjongCard);
-        var mahjongJs = mahjong.getComponent("Mahjong");
+        var mahjongJs = mahjong.getComponent("MahjongPrefab");
         mahjongJs.content.spriteFrame = this.cardSpriteAtlas.getSpriteFrame("big_" + cardName);
         mahjongJs.cardName = cardName;
         cc.log(mahjongJs);
@@ -318,7 +330,7 @@ cc.Class({
             cc.log("子节点数量为：" + mineAllMahjongs.length);
             for (var i = 0; i < mineAllMahjongs.length; i++) {
                 var mahjongCard = mineAllMahjongs[i];
-                var mahjongCardJS = mahjongCard.getComponent("Mahjong");
+                var mahjongCardJS = mahjongCard.getComponent("MahjongPrefab");
                 if (mahjongCardJS.isChoose) {
                     mahjongCardJS.isChoose = false;
                     mahjongCard.y -= 20;
@@ -347,30 +359,148 @@ cc.Class({
     /**
      * 判断手上的牌能否吃桌上的牌
      */
-    chow: function (deskCard, handleCards) {
+    isCanChow: function (deskCard, handleCards) {
         // 统计
         var type = deskCard.substring(0, deskCard.length - 1);
         var point = deskCard.substring(deskCard.length - 1, deskCard.length);
         var pointNumber = parseInt(point);
-        var hasLittleeTwoStep = this.hasSameCard(type + (pointNumber - 2), handleCards);;
-        var hasLittleeOneStep = this.hasSameCard(type + (pointNumber - 1), handleCards);;
-        var hasBiggerOneStep = this.hasSameCard(type + (pointNumber + 1), handleCards);;
-        var hasBiggerTwoStep = this.hasSameCard(type + (pointNumber + 2), handleCards);;
+        this.hasLittleeTwoStep = this.hasSameCard(type + (pointNumber - 2), handleCards);;
+        this.hasLittleeOneStep = this.hasSameCard(type + (pointNumber - 1), handleCards);;
+        this.hasBiggerOneStep = this.hasSameCard(type + (pointNumber + 1), handleCards);;
+        this.hasBiggerTwoStep = this.hasSameCard(type + (pointNumber + 2), handleCards);;
 
-        cc.log(type + (pointNumber - 2) + ":" + hasLittleeTwoStep);
-        cc.log(type + (pointNumber - 1) + ":" + hasLittleeOneStep);
-        cc.log(type + (pointNumber + 1) + ":" + hasBiggerOneStep);
-        cc.log(type + (pointNumber + 2) + ":" + hasBiggerTwoStep);
+        // 只要三种组合有一种成立就能吃，
+        if ((this.hasLittleeTwoStep && this.hasLittleeOneStep)
+            || (this.hasBiggerOneStep && this.hasLittleeOneStep)
+            || (this.hasBiggerOneStep && this.hasBiggerTwoStep)) {
+            return true;
+        }
+
+        return false;
+    },
+    /**
+     * 吃的方式
+     */
+    judgeChowType: function (deskCard) {
+        // 判断是否有两种以上的方式可以吃的时候需要额外处理
+
+        // 方案一
+        // 先1245比较组队比较获取有的组合，拿到能吃的组合，并且统计数量
+        // 如果统计数量==0，则不能吃
+        // 如果数量==1，则直接吃
+        // 如果数量>1，则弹出选择多个供用户选择
+
+        var type = deskCard.substring(0, deskCard.length - 1);
+        var point = deskCard.substring(deskCard.length - 1, deskCard.length);
+        var pointNumber = parseInt(point);
+
+
+        // 方案二
+        // 假设要判断牌3能否吃，需要判断的是1245
+        // 如果2&&4 ，结果是true则是多个可以吃的情况
+        // 当这种情况成立，则可能有多种情况成立
+        if (this.hasBiggerOneStep && this.hasLittleeOneStep) {
+            // 这种情况成立则只有一种方式能吃，直接吃了
+            if (!(this.hasLittleeTwoStep || this.hasBiggerTwoStep)) {
+                this.chow(deskCard, type + (pointNumber - 2), type + (pointNumber - 1));
+                return;
+                // 有两种方式或者以上的方式可以吃
+            } else {
+
+                // 如果满足1&&2，显示1-2-3的吃的方式
+                if (this.hasLittleeTwoStep) {
+                    this.showChowType(type, pointNumber - 2, pointNumber - 1, pointNumber, 3);
+                }
+                // 先显示2-3-4 的吃的方式
+                this.showChowType(type, pointNumber - 1, pointNumber, pointNumber + 1, 2);
+
+
+                // 如果满足4&&5，显示3-4-5的吃的方式
+                if (this.hasLittleeTwoStep) {
+                    this.showChowType(type, pointNumber, pointNumber + 1, pointNumber + 2, 1);
+
+                }
+            }
+
+        } else {
+            if (this.hasLittleeTwoStep && this.hasLittleeOneStep) {
+                this.chow(deskCard, type + (pointNumber - 2), type + (pointNumber - 1));
+                
+            }
+            if (this.hasBiggerOneStep && this.hasLittleeTwoStep) {
+                this.chow(type, pointNumber, pointNumber + 1, pointNumber + 2, 1);
+                
+            }
+        }
+    },
+    /**
+     * 吃，移除手上的牌，给xx牌数组添加一个数组
+     */
+    chow: function (deskCard, handleCard1, handleCard2) {
+         cc.log(handleCard1+"运行到吃牌这里了。。。。。。。。。。。"+handleCard2);
+         cc.log(this.mineHandleCards);
+        for (var i=0;i<this.mineHandleCards.length;i++) {
+            if( this.mineHandleCards[i]==handleCard1){
+                this.mineHandleCards.splice(i,1);
+                // this.mineHandleCards.remove(i);
+                
+                break;
+            }
+        }
+        for (var i=0;i<this.mineHandleCards.length;i++) {
+            if( this.mineHandleCards[i]==handleCard2){
+                this.mineHandleCards.splice(i,1);
+                // this.mineHandleCards.remove(i);
+                break;
+            }
+        }
+        cc.log("吃牌之后的手牌。。。。。。。。。。。");
+
+        // 将吃掉的牌储存在另外一个对象里面
+        
+        cc.log(this.mineHandleCards);
+        
+        this.showMineHandleMahjong();
+        
+        this.chowTypeLayout.removeAllChildren ();
+    },
+    /**
+     * 
+     */
+    showChowType: function (type, littlerNumer, midleNumber, biggerNumber, deskCardPosition) {
+        var chowType = cc.instantiate(this.chowType);
+        var chowTypeJs = chowType.getComponent("ChowTypePrefab");
+        chowTypeJs.contentLabel.string = littlerNumer + "-" + midleNumber + "-" + biggerNumber;
+        this.chowTypeLayout.addChild(chowType);
+        var childrenCount = this.chowTypeLayout.childrenCount;
+        chowType.x = childrenCount * 160-160*1.5;
+        chowType.y = -160;
+        
+        var self = this;
+        chowType.on('mousedown', function (event) {
+            // 桌上的牌是吃牌的第一个位置
+            if (1 == deskCardPosition) {
+                self.chow(self.deskCard, type + midleNumber, type + biggerNumber);
+                // 桌上的牌是中间位置
+            } else if (2 == deskCardPosition) {
+                self.chow(self.deskCard, type + littlerNumer, type + biggerNumber);
+                // 桌上的牌是第三个位置
+            } else {
+                self.chow(self.deskCard, type + littlerNumer, type + midleNumber);
+            }
+
+        });
 
     },
+
     /**
      * 统计一手牌里面是否有该张牌
      */
     hasSameCard: function (cardName, handleCards) {
         cc.log(handleCards);
         for (var i = 0; i < handleCards.length; i++) {
-            cc.log("统计的牌是：" + cardName);
-            cc.log("手上的这张牌是：" + handleCards[i]);
+            // cc.log("统计的牌是：" + cardName);
+            // cc.log("手上的这张牌是：" + handleCards[i]);
             cc.log(cardName == handleCards[i]);
 
             if (cardName == handleCards[i]) {
@@ -383,7 +513,7 @@ cc.Class({
      * 统计一手牌里面有多少张与给出的牌一样的牌
      */
     countNumberOfSameCard: function (cardName, handleCards) {
-        cc.log("统计的牌是：" + cardName);
+        // cc.log("统计的牌是：" + cardName);
 
         var sameCardNumber = 0;
         for (var i = 0; i < handleCards.length; i++) {
